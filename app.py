@@ -1,3 +1,4 @@
+import os
 import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
@@ -157,15 +158,22 @@ CARTONS = {
 
 
 # ==========================================
-# 3. טעינה ישירה ומדוייקת מ-products.csv
+# 3. פונקציית ניקוי SKU בטוחה לחלוטין
 # ==========================================
-@st.cache_data(ttl=1)  # רענון מיידי של הזיכרון
-def load_all_products():
-  import os
+def safe_clean_sku(val):
+  s = str(val).strip()
+  if s.endswith(".0"):
+    return s[:-2]
+  return s
 
+
+# ==========================================
+# 4. טעינה מ-products.csv
+# ==========================================
+@st.cache_data(ttl=1)
+def load_all_products():
   if os.path.exists("products.csv"):
     try:
-      # ניסיון קריאה בפורמטים שונים
       try:
         df = pd.read_csv("products.csv", encoding="utf-8")
       except Exception:
@@ -173,7 +181,6 @@ def load_all_products():
 
       df.columns = [str(c).strip() for c in df.columns]
 
-      # זיהוי העמודות הספציפיות מקובץ products.csv שלך
       sku_c = next((c for c in df.columns if "sku" in c.lower()), None)
       name_c = next((c for c in df.columns if "name" in c.lower()), None)
       length_c = next((c for c in df.columns if "length" in c.lower()), None)
@@ -182,18 +189,13 @@ def load_all_products():
 
       if sku_c and name_c and length_c and width_c and height_c:
         df_clean = pd.DataFrame({
-            "SKU": (
-                df[sku_c]
-                .astype(str)
-                .apply(lambda x: x.replace(".0", "") if x.endswith(".0") else x)
-            ),
+            "SKU": df[sku_c].apply(safe_clean_sku),
             "Item_Name": df[name_c].astype(str),
             "Box_L": pd.to_numeric(df[length_c], errors="coerce"),
             "Box_W": pd.to_numeric(df[width_c], errors="coerce"),
             "Box_H": pd.to_numeric(df[height_c], errors="coerce"),
         })
 
-        # ניקוי שורות ללא מידות תקינות
         df_clean.dropna(subset=["Box_L", "Box_W", "Box_H"], inplace=True)
         return df_clean, "CSV"
       else:
@@ -201,7 +203,7 @@ def load_all_products():
     except Exception as e:
       st.sidebar.error(f"שגיאה בטעינת products.csv: {e}")
 
-  # גיבוי רק אם הקובץ לא נמצע
+  # גיבוי במקרה חריג
   mock_df = pd.DataFrame([
       {
           "SKU": "100019",
@@ -229,7 +231,7 @@ else:
   st.sidebar.warning('💡 עדיין טוען נתוני מדגם. בודק את קובץ products.csv...')
 
 # ==========================================
-# 4. סיידבאר: לבחירת מוצר
+# 5. סיידבאר: לבחירת מוצר
 # ==========================================
 st.sidebar.header("🔎 איתור מוצר מהמלאי")
 search_mode = st.sidebar.radio(
@@ -264,7 +266,7 @@ else:
   sku_val = "ידני"
 
 # ==========================================
-# 5. לוגיקת התאמת קרטון
+# 6. לוגיקת התאמת קרטון
 # ==========================================
 item_volume = item_L * item_W * item_H
 valid_options = []
@@ -288,7 +290,7 @@ best_carton_key = (
 )
 
 # ==========================================
-# 6. תצוגת פרטי המוצר
+# 7. תצוגת פרטי המוצר
 # ==========================================
 st.markdown(
     f"""<div class="product-box">
@@ -300,7 +302,7 @@ st.markdown(
 )
 
 # ==========================================
-# 7. מפרט 4 הקרטונים במחסן
+# 8. מפרט 4 הקרטונים במחסן
 # ==========================================
 st.markdown(
     "<div style='font-weight: 700; font-size: 0.98rem; margin: 2px 0 4px 0;'>📋"
@@ -340,7 +342,7 @@ for idx, (key, dims) in enumerate(CARTONS.items()):
   cols[idx].markdown(card_html, unsafe_allow_html=True)
 
 # ==========================================
-# 8. הדמיית תלת-ממד (3D)
+# 9. הדמיית תלת-ממד (3D)
 # ==========================================
 if not valid_options:
   st.error(
@@ -492,7 +494,7 @@ else:
   st.plotly_chart(fig, use_container_width=True)
 
 # ==========================================
-# 9. טבלה מתקפלת לצפייה בכל המאגר
+# 10. טבלה מתקפלת לצפייה בכל המאגר
 # ==========================================
 with st.expander(
     f'📋 לחץ כאן לצפייה וחיפוש בכל רשימת המק"טים ({len(df_items)} פריטים)'

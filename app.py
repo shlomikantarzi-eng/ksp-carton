@@ -1,7 +1,6 @@
 import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
-from google.cloud import bigquery
 
 # ==========================================
 # 1. הגדרות עמוד
@@ -12,12 +11,12 @@ st.set_page_config(
 
 st.title("📦 מערכת אופטימיזציית אריזה ותצוגת 3D")
 st.markdown(
-    "מערכת חיבור בלייב ל-BigQuery: בחירת מק\"ט מהמלאי, התאמה ל-4 הקרטונים,"
-    " חישוב ניצול נפח והדמיה תלת-ממדית."
+    'בחירת מק"ט מהמלאי או הזנה ידנית $\\leftarrow$ התאמה ל-4 הקרטונים $\\leftarrow$'
+    " חישוב ניצול נפח ותצוגה מרחבית."
 )
 
 # ==========================================
-# 2. הגדרת 4 הקרטונים מ-BigQuery
+# 2. הגדרת 4 הקרטונים הסופיים (מתוך BigQuery Trial 1 Max)
 # ==========================================
 CARTONS = {
     "קבוצה 1 (סטנדרטית / בינונית)": {
@@ -48,11 +47,89 @@ CARTONS = {
 
 
 # ==========================================
-# 3. טעינת כל המק"טים מ-BigQuery (עם זיכרון מטמון למהירות)
+# 3. מנגנון טעינת נתונים חכם (CSV -> BigQuery -> Mock)
 # ==========================================
-@st.cache_data(ttl=600)  # רענון נתונים אוטומטי כל 10 דקות
-def load_data_from_bigquery():
+@st.cache_data(ttl=600)
+def load_all_products():
+  # א) ניסיון טעינה מקובץ products.csv במאגר ה-GitHub
   try:
+    df = pd.read_csv("products.csv")
+
+    # ניקוי וזיהוי גמיש של שמות עמודות
+    cols = {str(c).strip(): str(c).strip() for c in df.columns}
+    df.rename(columns=cols, inplace=True)
+
+    sku_col = next(
+        (
+            c
+            for c in df.columns
+            if "sku" in c.lower() or "מק" in c or "id" in c.lower()
+        ),
+        df.columns[0],
+    )
+    name_col = next(
+        (
+            c
+            for c in df.columns
+            if "name" in c.lower()
+            or "item" in c.lower()
+            or "שם" in c
+            or "desc" in c.lower()
+        ),
+        df.columns[1],
+    )
+    l_col = next(
+        (
+            c
+            for c in df.columns
+            if "box_l" in c.lower()
+            or "length" in c.lower()
+            or c.lower() == "l"
+            or "אורך" in c
+        ),
+        None,
+    )
+    w_col = next(
+        (
+            c
+            for c in df.columns
+            if "box_w" in c.lower()
+            or "width" in c.lower()
+            or c.lower() == "w"
+            or "רוחב" in c
+        ),
+        None,
+    )
+    h_col = next(
+        (
+            c
+            for c in df.columns
+            if "box_h" in c.lower()
+            or "height" in c.lower()
+            or c.lower() == "h"
+            or "גובה" in c
+        ),
+        None,
+    )
+
+    if l_col and w_col and h_col:
+      df_clean = df[[sku_col, name_col, l_col, w_col, h_col]].copy()
+      df_clean.columns = ["SKU", "Item_Name", "Box_L", "Box_W", "Box_H"]
+
+      df_clean["SKU"] = df_clean["SKU"].astype(str)
+      df_clean["Box_L"] = pd.to_numeric(df_clean["Box_L"], errors="coerce")
+      df_clean["Box_W"] = pd.to_numeric(df_clean["Box_W"], errors="coerce")
+      df_clean["Box_H"] = pd.to_numeric(df_clean["Box_H"], errors="coerce")
+      df_clean.dropna(subset=["Box_L", "Box_W", "Box_H"], inplace=True)
+
+      return df_clean, "CSV"
+  except Exception:
+    pass
+
+  # ב) ניסיון טעינה מ-BigQuery במידה וקיים חיבור
+  try:
+    from google.cloud import bigquery
+
     client = bigquery.Client()
     query = """
             SELECT 
@@ -64,49 +141,59 @@ def load_data_from_bigquery():
             FROM `responsive-sun-386807.real_single_items_warehouse_package.warehouse_package`
             WHERE Box_L IS NOT NULL AND Box_W IS NOT NULL AND Box_H IS NOT NULL
         """
-    df = client.query(query).to_dataframe()
-    return df
-  except Exception as e:
-    # גיבוי במקרה של הרצה מקומית ללא מפתח BigQuery
-    st.sidebar.warning(
-        "טוען נתוני גיבוי מקומיים (חבר מפתח GCP לטעינה מלאה מ-BigQuery)"
-    )
-    return pd.DataFrame([
-        {
-            "SKU": "100019",
-            "Item_Name": "מסך מחשב קעור 27 אינץ'",
-            "Box_L": 620.0,
-            "Box_W": 400.0,
-            "Box_H": 180.0,
-        },
-        {
-            "SKU": "200045",
-            "Item_Name": "מקלדת מכנית גיימינג",
-            "Box_L": 450.0,
-            "Box_W": 150.0,
-            "Box_H": 40.0,
-        },
-        {
-            "SKU": "300088",
-            "Item_Name": "מארז מחשב Tower",
-            "Box_L": 520.0,
-            "Box_W": 280.0,
-            "Box_H": 510.0,
-        },
-        {
-            "SKU": "400012",
-            "Item_Name": "זרוע כפולה לכל מסך",
-            "Box_L": 950.0,
-            "Box_W": 220.0,
-            "Box_H": 130.0,
-        },
-    ])
+    df_bq = client.query(query).to_dataframe()
+    return df_bq, "BigQuery"
+  except Exception:
+    pass
+
+  # ג) ברירת מחדל: נתוני גיבוי במידה וטרם הועלה קובץ
+  mock_df = pd.DataFrame([
+      {
+          "SKU": "100019",
+          "Item_Name": "מסך מחשב קעור 27 אינץ'",
+          "Box_L": 620.0,
+          "Box_W": 400.0,
+          "Box_H": 180.0,
+      },
+      {
+          "SKU": "200045",
+          "Item_Name": "מקלדת מכנית גיימינג",
+          "Box_L": 450.0,
+          "Box_W": 150.0,
+          "Box_H": 40.0,
+      },
+      {
+          "SKU": "300088",
+          "Item_Name": "מארז מחשב Tower",
+          "Box_L": 520.0,
+          "Box_W": 280.0,
+          "Box_H": 510.0,
+      },
+      {
+          "SKU": "400012",
+          "Item_Name": "זרוע כפולה לכל מסך",
+          "Box_L": 950.0,
+          "Box_W": 220.0,
+          "Box_H": 130.0,
+      },
+  ])
+  return mock_df, "Mock"
 
 
-df_items = load_data_from_bigquery()
+df_items, data_source = load_all_products()
+
+# הודעת אינדיקציה קטנה בסיידבאר לגבי מקור הנתונים
+if data_source == "CSV":
+  st.sidebar.success(f'🟢 נטענו {len(df_items)} מק"טים מקובץ ה-CSV במאגר!')
+elif data_source == "BigQuery":
+  st.sidebar.success(f'🟢 נטענו {len(df_items)} מק"טים בלייב מ-BigQuery!')
+else:
+  st.sidebar.info(
+      '💡 טוען נתוני מדגם. העלה קובץ products.csv למאגר לטעינת כל המק"טים.'
+  )
 
 # ==========================================
-# 4. סיידבאר: לבחירה מתוך כל המק"טים
+# 4. סיידבאר: לבחירה מתוך המאגר
 # ==========================================
 st.sidebar.header("🔎 איתור מוצר מהמלאי")
 search_mode = st.sidebar.radio(
@@ -117,12 +204,11 @@ item_L, item_W, item_H = 0.0, 0.0, 0.0
 item_label = ""
 
 if search_mode == 'בחירה מרשימת המק"טים המלאה':
-  # יצירת רשימה נפתחת (Dropdown) עם כל המק"טים ושמותיהם
   df_items["display_name"] = (
-      df_items["SKU"] + " - " + df_items["Item_Name"].fillna("")
+      df_items["SKU"] + " - " + df_items["Item_Name"].fillna("ללא שם")
   )
   selected_display = st.sidebar.selectbox(
-      f"בחר מק\"ט מתוך {len(df_items)} מוצרים במאגר:",
+      f'חפש או בחר מק"ט ({len(df_items)} זמינים):',
       options=df_items["display_name"].tolist(),
   )
 
@@ -179,7 +265,7 @@ else:
   st.divider()
 
   # ==========================================
-  # 7. הדמיית תלת-ממד (3D)
+  # 7. הדמיית תלת-ממד (3D Box-in-Box)
   # ==========================================
   def get_box_lines(x0, y0, z0, dx, dy, dz, name, color):
     x = [
@@ -266,6 +352,8 @@ else:
     )
 
   fig = go.Figure()
+
+  # קרטון חיצוני
   fig.add_trace(
       get_box_mesh(
           0,
@@ -291,6 +379,8 @@ else:
           best["dims"]["color"],
       )
   )
+
+  # מוצר פנימי
   fig.add_trace(
       get_box_mesh(
           0, 0, 0, item_L, item_W, item_H, "המוצר", "green", opacity=0.75
@@ -318,9 +408,11 @@ else:
   st.plotly_chart(fig, use_container_width=True)
 
   # ==========================================
-  # 8. טבלה מתקפלת לצפייה בכל המק"טים במאגר
+  # 8. טבלה מתקפלת לצפייה בכל המאגר
   # ==========================================
-  with st.expander("📋 לחץ כאן לצפייה וחיפוש בכל רשימת המק\"טים מהמאגר"):
+  with st.expander(
+      f'📋 לחץ כאן לצפייה וחיפוש בכל רשימת המק"טים ({len(df_items)} פריטים)'
+  ):
     st.dataframe(
         df_items[["SKU", "Item_Name", "Box_L", "Box_W", "Box_H"]],
         use_container_width=True,

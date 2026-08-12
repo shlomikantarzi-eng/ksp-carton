@@ -4,13 +4,13 @@ import plotly.graph_objects as go
 import streamlit as st
 
 # ==========================================
-# 1. הגדרות עמוד ועיצוב CSS
+# 1. הגדרות עמוד ועיצוב רספונסיבי למובייל (Mobile-First CSS)
 # ==========================================
 st.set_page_config(
     page_title="מערכת אופטימיזציית אריזה 3D - KSP",
     page_icon="📦",
     layout="wide",
-    initial_sidebar_state="expanded",
+    initial_sidebar_state="collapsed",  # סגור כברירת מחדל במובייל
 )
 
 st.markdown(
@@ -22,14 +22,21 @@ st.markdown(
         font-family: 'Segoe UI', Arial, sans-serif;
     }
     .block-container {
-        padding-top: 1.8rem !important;
+        padding-top: 1rem !important;
         padding-bottom: 0.5rem !important;
         max-width: 98% !important;
     }
-    [data-testid="stSidebar"] {
-        min-width: 380px !important;
-        max-width: 400px !important;
+    
+    /* תיבת חיפוש ראשית במסך */
+    .search-container {
+        background-color: #eff6ff;
+        border: 1px solid #bfdbfe;
+        border-radius: 10px;
+        padding: 12px 16px;
+        margin-bottom: 12px;
     }
+
+    /* קופסת פרטי המוצר שנבחר */
     .product-box {
         background-color: #f8fafc;
         border: 1px solid #cbd5e1;
@@ -48,6 +55,8 @@ st.markdown(
         color: #334155;
         margin-top: 2px;
     }
+
+    /* עיצוב כרטיסיות הקרטונים */
     .carton-card {
         border: 1px solid #cbd5e1;
         border-radius: 8px;
@@ -55,6 +64,7 @@ st.markdown(
         background-color: #ffffff;
         text-align: center;
         box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        margin-bottom: 6px;
     }
     .carton-card-selected {
         border: 2px solid #16a34a !important;
@@ -88,7 +98,7 @@ st.markdown(
         display: flex;
         justify-content: center;
         align-items: center;
-        height: 48px;
+        height: 40px;
         margin: 2px 0;
     }
     .dims-breakdown {
@@ -113,8 +123,8 @@ st.markdown(
 )
 
 st.markdown(
-    "<h3 style='margin: 0 0 6px 0; color: #0f172a;'>📦 מערכת אופטימיזציית"
-    " אריזה ותצוגת תלת-ממד (3D)</h3>",
+    "<h3 style='margin: 0 0 8px 0; color: #0f172a;'>📦 מערכת אופטימיזציית"
+    " אריזה 3D</h3>",
     unsafe_allow_html=True,
 )
 
@@ -128,7 +138,7 @@ CARTONS = {
         "W": 481.0,
         "H": 295.0,
         "color": "#1f77b4",
-        "svg": """<svg width="60" height="42" viewBox="0 0 70 45"><path d="M35 5 L60 16 L35 27 L10 16 Z" fill="#f59e0b" stroke="#b45309"/><path d="M10 16 L35 27 L35 42 L10 31 Z" fill="#d97706" stroke="#b45309"/><path d="M35 27 L60 16 L60 31 L35 42 Z" fill="#b45309" stroke="#78350f"/></svg>""",
+        "svg": """<svg width="55" height="38" viewBox="0 0 70 45"><path d="M35 5 L60 16 L35 27 L10 16 Z" fill="#f59e0b" stroke="#b45309"/><path d="M10 16 L35 27 L35 42 L10 31 Z" fill="#d97706" stroke="#b45309"/><path d="M35 27 L60 16 L60 31 L35 42 Z" fill="#b45309" stroke="#78350f"/></svg>""",
     },
     "קבוצה 2": {
         "title": "קבוצה 2 (רחבה/ארוכה)",
@@ -136,7 +146,7 @@ CARTONS = {
         "W": 880.0,
         "H": 390.0,
         "color": "#ff7f0e",
-        "svg": """<svg width="75" height="35" viewBox="0 0 85 40"><path d="M42.5 5 L80 14 L42.5 23 L5 14 Z" fill="#f59e0b" stroke="#b45309"/><path d="M5 14 L42.5 23 L42.5 35 L5 26 Z" fill="#d97706" stroke="#b45309"/><path d="M42.5 23 L80 14 L80 26 L42.5 35 Z" fill="#b45309" stroke="#78350f"/></svg>""",
+        "svg": """<svg width="65" height="30" viewBox="0 0 85 40"><path d="M42.5 5 L80 14 L42.5 23 L5 14 Z" fill="#f59e0b" stroke="#b45309"/><path d="M5 14 L42.5 23 L42.5 35 L5 26 Z" fill="#d97706" stroke="#b45309"/><path d="M42.5 23 L80 14 L80 26 L42.5 35 Z" fill="#b45309" stroke="#78350f"/></svg>""",
     },
     "קבוצה 3": {
         "title": "קבוצה 3 (נפחית/גבוהה)",
@@ -144,7 +154,7 @@ CARTONS = {
         "W": 830.0,
         "H": 670.0,
         "color": "#9467bd",
-        "svg": """<svg width="50" height="48" viewBox="0 0 60 55"><path d="M30 4 L52 14 L30 24 L8 14 Z" fill="#f59e0b" stroke="#b45309"/><path d="M8 14 L30 24 L30 50 L8 40 Z" fill="#d97706" stroke="#b45309"/><path d="M30 24 L52 14 L52 40 L30 50 Z" fill="#b45309" stroke="#78350f"/></svg>""",
+        "svg": """<svg width="45" height="42" viewBox="0 0 60 55"><path d="M30 4 L52 14 L30 24 L8 14 Z" fill="#f59e0b" stroke="#b45309"/><path d="M8 14 L30 24 L30 50 L8 40 Z" fill="#d97706" stroke="#b45309"/><path d="M30 24 L52 14 L52 40 L30 50 Z" fill="#b45309" stroke="#78350f"/></svg>""",
     },
     "קבוצה 4": {
         "title": "קבוצה 4 (ארוכה/צרה)",
@@ -152,14 +162,11 @@ CARTONS = {
         "W": 460.0,
         "H": 290.0,
         "color": "#17becf",
-        "svg": """<svg width="80" height="30" viewBox="0 0 90 32"><path d="M45 4 L85 10 L45 16 L5 10 Z" fill="#f59e0b" stroke="#b45309"/><path d="M5 10 L45 16 L45 28 L5 22 Z" fill="#d97706" stroke="#b45309"/><path d="M45 16 L85 10 L85 22 L45 28 Z" fill="#b45309" stroke="#78350f"/></svg>""",
+        "svg": """<svg width="70" height="26" viewBox="0 0 90 32"><path d="M45 4 L85 10 L45 16 L5 10 Z" fill="#f59e0b" stroke="#b45309"/><path d="M5 10 L45 16 L45 28 L5 22 Z" fill="#d97706" stroke="#b45309"/><path d="M45 16 L85 10 L85 22 L45 28 Z" fill="#b45309" stroke="#78350f"/></svg>""",
     },
 }
 
 
-# ==========================================
-# 3. פונקציית ניקוי SKU בטוחה לחלוטין
-# ==========================================
 def safe_clean_sku(val):
   s = str(val).strip()
   if s.endswith(".0"):
@@ -168,7 +175,7 @@ def safe_clean_sku(val):
 
 
 # ==========================================
-# 4. טעינה מ-products.csv
+# 3. טעינת נתונים
 # ==========================================
 @st.cache_data(ttl=1)
 def load_all_products():
@@ -198,12 +205,9 @@ def load_all_products():
 
         df_clean.dropna(subset=["Box_L", "Box_W", "Box_H"], inplace=True)
         return df_clean, "CSV"
-      else:
-        st.sidebar.error(f"חסרות עמודות ב-CSV. נמצאו: {list(df.columns)}")
-    except Exception as e:
-      st.sidebar.error(f"שגיאה בטעינת products.csv: {e}")
+    except Exception:
+      pass
 
-  # גיבוי במקרה חריג
   mock_df = pd.DataFrame([
       {
           "SKU": "100019",
@@ -225,48 +229,61 @@ def load_all_products():
 
 df_items, data_source = load_all_products()
 
-if data_source == "CSV":
-  st.sidebar.success(f'🟢 נטענו {len(df_items)} מק"טים מקובץ ה-CSV!')
-else:
-  st.sidebar.warning('💡 עדיין טוען נתוני מדגם. בודק את קובץ products.csv...')
-
 # ==========================================
-# 5. סיידבאר: לבחירת מוצר
+# 4. תיבת חיפוש ראשית במרכז המסך (נוחה במיוחד במובייל!)
 # ==========================================
-st.sidebar.header("🔎 איתור מוצר מהמלאי")
-search_mode = st.sidebar.radio(
-    "שיטת בחירה:", ["בחירה מרשימת המק\"טים המלאה", "הזנת מידות ידנית"]
-)
-
-item_L, item_W, item_H = 0.0, 0.0, 0.0
-item_name_full = ""
-sku_val = ""
-
-if search_mode == 'בחירה מרשימת המק"טים המלאה':
-  df_items["display_name"] = (
-      df_items["SKU"] + " - " + df_items["Item_Name"].fillna("ללא שם")
-  )
-  selected_display = st.sidebar.selectbox(
-      f'חפש או בחר מק"ט ({len(df_items)} זמינים):',
-      options=df_items["display_name"].tolist(),
+with st.container():
+  st.markdown(
+      '<div style="font-weight: 700; font-size: 0.95rem; margin-bottom:'
+      ' 4px;">🔎 איתור מוצר מהמלאי:</div>',
+      unsafe_allow_html=True,
   )
 
-  selected_row = df_items[df_items["display_name"] == selected_display].iloc[0]
-  item_L = float(selected_row["Box_L"])
-  item_W = float(selected_row["Box_W"])
-  item_H = float(selected_row["Box_H"])
-  item_name_full = str(selected_row["Item_Name"])
-  sku_val = str(selected_row["SKU"])
-else:
-  st.sidebar.subheader("מידות המוצר (מ\"מ)")
-  item_L = st.sidebar.number_input("אורך L", min_value=10.0, value=500.0)
-  item_W = st.sidebar.number_input("רוחב W", min_value=10.0, value=300.0)
-  item_H = st.sidebar.number_input("גובה H", min_value=10.0, value=150.0)
-  item_name_full = "מוצר בהזנה ידנית"
-  sku_val = "ידני"
+  col_mode, col_select = st.columns([1, 2.5])
+
+  with col_mode:
+    search_mode = st.radio(
+        "אופן החיפוש:",
+        ["מרשימת המאגר", "הזנת מידות ידנית"],
+        horizontal=True,
+        label_visibility="collapsed",
+    )
+
+  item_L, item_W, item_H = 0.0, 0.0, 0.0
+  item_name_full = ""
+  sku_val = ""
+
+  if search_mode == "מרשימת המאגר":
+    df_items["display_name"] = (
+        df_items["SKU"] + " - " + df_items["Item_Name"].fillna("ללא שם")
+    )
+
+    with col_select:
+      selected_display = st.selectbox(
+          f'חפש מק"ט או שם מוצר ({len(df_items)} זמינים):',
+          options=df_items["display_name"].tolist(),
+          label_visibility="collapsed",
+      )
+
+    selected_row = df_items[
+        df_items["display_name"] == selected_display
+    ].iloc[0]
+    item_L = float(selected_row["Box_L"])
+    item_W = float(selected_row["Box_W"])
+    item_H = float(selected_row["Box_H"])
+    item_name_full = str(selected_row["Item_Name"])
+    sku_val = str(selected_row["SKU"])
+  else:
+    with col_select:
+      c1, c2, c3 = st.columns(3)
+      item_L = c1.number_input("אורך (מ\"מ)", min_value=10.0, value=500.0)
+      item_W = c2.number_input("רוחב (מ\"מ)", min_value=10.0, value=300.0)
+      item_H = c3.number_input("גובה (מ\"מ)", min_value=10.0, value=150.0)
+      item_name_full = "מוצר בהזנה ידנית"
+      sku_val = "ידני"
 
 # ==========================================
-# 6. לוגיקת התאמת קרטון
+# 5. לוגיקת התאמת קרטון
 # ==========================================
 item_volume = item_L * item_W * item_H
 valid_options = []
@@ -290,7 +307,7 @@ best_carton_key = (
 )
 
 # ==========================================
-# 7. תצוגת פרטי המוצר
+# 6. תצוגת פרטי המוצר
 # ==========================================
 st.markdown(
     f"""<div class="product-box">
@@ -302,10 +319,10 @@ st.markdown(
 )
 
 # ==========================================
-# 8. מפרט 4 הקרטונים במחסן
+# 7. מפרט 4 הקרטונים במחסן
 # ==========================================
 st.markdown(
-    "<div style='font-weight: 700; font-size: 0.98rem; margin: 2px 0 4px 0;'>📋"
+    "<div style='font-weight: 700; font-size: 0.95rem; margin: 2px 0 4px 0;'>📋"
     " מפרט הקרטונים במחסן והתאמה:</div>",
     unsafe_allow_html=True,
 )
@@ -342,7 +359,7 @@ for idx, (key, dims) in enumerate(CARTONS.items()):
   cols[idx].markdown(card_html, unsafe_allow_html=True)
 
 # ==========================================
-# 9. הדמיית תלת-ממד (3D)
+# 8. הדמיית תלת-ממד (3D)
 # ==========================================
 if not valid_options:
   st.error(
@@ -487,14 +504,14 @@ else:
           zaxis_title='גובה (מ"מ)',
           aspectmode="data",
       ),
-      height=440,
+      height=420,
       margin=dict(l=5, r=5, b=5, t=25),
   )
 
   st.plotly_chart(fig, use_container_width=True)
 
 # ==========================================
-# 10. טבלה מתקפלת לצפייה בכל המאגר
+# 9. טבלה מתקפלת לצפייה בכל המאגר
 # ==========================================
 with st.expander(
     f'📋 לחץ כאן לצפייה וחיפוש בכל רשימת המק"טים ({len(df_items)} פריטים)'

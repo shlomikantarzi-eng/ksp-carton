@@ -3,7 +3,7 @@ import plotly.graph_objects as go
 import streamlit as st
 
 # ==========================================
-# 1. הגדרות עמוד ועיצוב CSS מתקדם (UI/UX & RTL)
+# 1. הגדרות עמוד ועיצוב CSS
 # ==========================================
 st.set_page_config(
     page_title="מערכת אופטימיזציית אריזה 3D - KSP",
@@ -22,14 +22,14 @@ st.markdown(
         font-family: 'Segoe UI', Arial, sans-serif;
     }
     
-    /* צמצום מרווחים עליונים כדי שהכל ייכנס במסך */
+    /* מרווח עליון מותאם כך שהכותרת תהיה בפריים מלא */
     .block-container {
-        padding-top: 1rem !important;
+        padding-top: 1.8rem !important;
         padding-bottom: 0.5rem !important;
         max-width: 98% !important;
     }
     
-    /* הרחבת סרגל הצד */
+    /* סרגל צד רחב */
     [data-testid="stSidebar"] {
         min-width: 380px !important;
         max-width: 400px !important;
@@ -41,17 +41,16 @@ st.markdown(
         border: 1px solid #cbd5e1;
         border-right: 6px solid #2563eb;
         border-radius: 8px;
-        padding: 10px 16px;
-        margin-bottom: 10px;
+        padding: 8px 14px;
+        margin-bottom: 8px;
     }
     .product-title {
-        font-size: 1.15rem;
+        font-size: 1.1rem;
         font-weight: 700;
         color: #0f172a;
-        margin-bottom: 4px;
     }
     .product-info-line {
-        font-size: 0.95rem;
+        font-size: 0.92rem;
         color: #334155;
         margin-top: 2px;
     }
@@ -59,75 +58,77 @@ st.markdown(
     /* עיצוב כרטיסיות 4 הקרטונים */
     .carton-card {
         border: 1px solid #cbd5e1;
-        border-radius: 10px;
-        padding: 10px;
+        border-radius: 8px;
+        padding: 6px 8px;
         background-color: #ffffff;
         text-align: center;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
     }
     .carton-card-selected {
-        border: 2.5px solid #16a34a !important;
+        border: 2px solid #16a34a !important;
         background-color: #f0fdf4 !important;
-        box-shadow: 0 4px 10px rgba(22, 163, 74, 0.15);
+        box-shadow: 0 3px 8px rgba(22, 163, 74, 0.15);
     }
     .badge-selected {
         background-color: #16a34a;
         color: #ffffff;
-        font-size: 0.78rem;
+        font-size: 0.75rem;
         font-weight: 600;
-        padding: 2px 8px;
+        padding: 1px 6px;
         border-radius: 4px;
         display: inline-block;
     }
     .badge-normal {
         background-color: #64748b;
         color: #ffffff;
-        font-size: 0.78rem;
-        padding: 2px 8px;
+        font-size: 0.75rem;
+        padding: 1px 6px;
         border-radius: 4px;
         display: inline-block;
     }
     .carton-title {
-        font-size: 0.98rem;
+        font-size: 0.92rem;
         font-weight: 700;
         color: #1e293b;
-        margin: 6px 0 4px 0;
+        margin: 4px 0 2px 0;
     }
     .carton-img-container {
         display: flex;
         justify-content: center;
         align-items: center;
-        margin: 4px 0;
+        height: 48px;
+        margin: 2px 0;
     }
     .dims-breakdown {
-        font-size: 0.85rem;
+        font-size: 0.82rem;
         color: #334155;
         background-color: #f8fafc;
-        border-radius: 6px;
-        padding: 6px;
-        margin-top: 6px;
+        border-radius: 5px;
+        padding: 4px;
+        margin-top: 4px;
         border: 1px solid #e2e8f0;
-        line-height: 1.4;
+        line-height: 1.3;
     }
     .carton-util {
-        font-size: 0.88rem;
+        font-size: 0.85rem;
         font-weight: 700;
         color: #15803d;
-        margin-top: 6px;
+        margin-top: 4px;
     }
     </style>
     """,
     unsafe_allow_html=True,
 )
 
+# כותרת ראשית קומפקטית ובפריים
 st.markdown(
-    "<h3 style='margin-bottom: 6px;'>📦 מערכת אופטימיזציית אריזה ותצוגת"
-    " תלת-ממד (3D)</h3>",
+    "<h3 style='margin: 0 0 6px 0; color: #0f172a;'>📦 מערכת אופטימיזציית"
+    " אריזה ותצוגת תלת-ממד (3D)</h3>",
     unsafe_allow_html=True,
 )
 
 # ==========================================
-# 2. הגדרת 4 הקרטונים במחסן
+# 2. הגדרת 4 הקרטונים + איורי SVG מותאמים ויזואלית
 # ==========================================
 CARTONS = {
     "קבוצה 1": {
@@ -136,6 +137,8 @@ CARTONS = {
         "W": 481.0,
         "H": 295.0,
         "color": "#1f77b4",
+        # איור קופסה פרופורציונלית בינונית
+        "svg": """<svg width="60" height="42" viewBox="0 0 70 45"><path d="M35 5 L60 16 L35 27 L10 16 Z" fill="#f59e0b" stroke="#b45309"/><path d="M10 16 L35 27 L35 42 L10 31 Z" fill="#d97706" stroke="#b45309"/><path d="M35 27 L60 16 L60 31 L35 42 Z" fill="#b45309" stroke="#78350f"/></svg>""",
     },
     "קבוצה 2": {
         "title": "קבוצה 2 (רחבה/ארוכה)",
@@ -143,6 +146,8 @@ CARTONS = {
         "W": 880.0,
         "H": 390.0,
         "color": "#ff7f0e",
+        # איור קופסה רחבה ושטוחה
+        "svg": """<svg width="75" height="35" viewBox="0 0 85 40"><path d="M42.5 5 L80 14 L42.5 23 L5 14 Z" fill="#f59e0b" stroke="#b45309"/><path d="M5 14 L42.5 23 L42.5 35 L5 26 Z" fill="#d97706" stroke="#b45309"/><path d="M42.5 23 L80 14 L80 26 L42.5 35 Z" fill="#b45309" stroke="#78350f"/></svg>""",
     },
     "קבוצה 3": {
         "title": "קבוצה 3 (נפחית/גבוהה)",
@@ -150,6 +155,8 @@ CARTONS = {
         "W": 830.0,
         "H": 670.0,
         "color": "#9467bd",
+        # איור קופסה קוביותית וגבוהה
+        "svg": """<svg width="50" height="48" viewBox="0 0 60 55"><path d="M30 4 L52 14 L30 24 L8 14 Z" fill="#f59e0b" stroke="#b45309"/><path d="M8 14 L30 24 L30 50 L8 40 Z" fill="#d97706" stroke="#b45309"/><path d="M30 24 L52 14 L52 40 L30 50 Z" fill="#b45309" stroke="#78350f"/></svg>""",
     },
     "קבוצה 4": {
         "title": "קבוצה 4 (ארוכה/צרה)",
@@ -157,6 +164,8 @@ CARTONS = {
         "W": 460.0,
         "H": 290.0,
         "color": "#17becf",
+        # איור קופסה צרה, ארוכה ונמוכה (כמו שרוול)
+        "svg": """<svg width="80" height="30" viewBox="0 0 90 32"><path d="M45 4 L85 10 L45 16 L5 10 Z" fill="#f59e0b" stroke="#b45309"/><path d="M5 10 L45 16 L45 28 L5 22 Z" fill="#d97706" stroke="#b45309"/><path d="M45 16 L85 10 L85 22 L45 28 Z" fill="#b45309" stroke="#78350f"/></svg>""",
     },
 }
 
@@ -330,37 +339,24 @@ best_carton_key = (
 # 6. תצוגת פרטי המוצר
 # ==========================================
 st.markdown(
-    f"""
-    <div class="product-box">
+    f"""<div class="product-box">
         <div class="product-title">🛒 מוצר שנבחר: {item_name_full}</div>
         <div class="product-info-line"><b>מק"ט:</b> {sku_val}</div>
         <div class="product-info-line"><b>מידות המוצר:</b> אורך <b>{int(item_L)}</b> מ"מ | רוחב <b>{int(item_W)}</b> מ"מ | גובה <b>{int(item_H)}</b> מ"מ</div>
-    </div>
-    """,
+    </div>""",
     unsafe_allow_html=True,
 )
 
 # ==========================================
-# 7. מפרט 4 הקרטונים במחסן (עם איור SVG ומידות מפורטות)
+# 7. מפרט 4 הקרטונים במחסן (נקי ללא תגיות זולגות)
 # ==========================================
 st.markdown(
-    "<h4 style='margin-top: 2px; margin-bottom: 6px;'>📋 מפרט הקרטונים במחסן"
-    " והתאמה:</h4>",
+    "<div style='font-weight: 700; font-size: 0.98rem; margin: 2px 0 4px 0;'>📋"
+    " מפרט הקרטונים במחסן והתאמה:</div>",
     unsafe_allow_html=True,
 )
 
 cols = st.columns(4)
-
-# איור קרטון וקטורי (SVG)
-BOX_SVG = """
-<svg width="42" height="42" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M32 6L6 18V46L32 58L58 46V18L32 6Z" fill="#D97706" stroke="#78350F" stroke-width="1.5"/>
-    <path d="M32 6L58 18L32 30L6 18L32 6Z" fill="#F59E0B"/>
-    <path d="M32 30V58L6 46V18L32 30Z" fill="#D97706"/>
-    <path d="M32 30L58 18V46L32 58V30Z" fill="#B45309"/>
-    <path d="M19 12L45 24" stroke="#FEF3C7" stroke-width="1.5" stroke-dasharray="2 2"/>
-</svg>
-"""
 
 for idx, (key, dims) in enumerate(CARTONS.items()):
   is_selected = key == best_carton_key
@@ -380,23 +376,19 @@ for idx, (key, dims) in enumerate(CARTONS.items()):
         f' {best_opt["utilization"]:.1f}%</div>'
     )
 
-  card_html = f"""
-    <div class="{card_class}">
-        {badge}
-        <div class="carton-img-container">{BOX_SVG}</div>
-        <div class="carton-title">{dims['title']}</div>
-        <div class="dims-breakdown">
-            <b>אורך:</b> {int(dims['L'])} מ"מ<br>
-            <b>רוחב:</b> {int(dims['W'])} מ"מ<br>
-            <b>גובה:</b> {int(dims['H'])} מ"מ
-        </div>
-        {util_html}
-    </div>
-    """
+  card_html = (
+      f'<div class="{card_class}">{badge}<div'
+      f' class="carton-img-container">{dims["svg"]}</div><div'
+      f' class="carton-title">{dims["title"]}</div><div'
+      f' class="dims-breakdown"><b>אורך:</b> {int(dims["L"])} מ"מ<br><b>רוחב:</b>'
+      f' {int(dims["W"])} מ"מ<br><b>גובה:</b> {int(dims["H"])}'
+      f" מ\"מ</div>{util_html}</div>"
+  )
+
   cols[idx].markdown(card_html, unsafe_allow_html=True)
 
 # ==========================================
-# 8. הדמיית תלת-ממד (3D)
+# 8. הדמיית תלת-ממד (3D) גבוהה ונגישה במרכז המסך
 # ==========================================
 if not valid_options:
   st.error(
@@ -543,8 +535,8 @@ else:
           zaxis_title='גובה (מ"מ)',
           aspectmode="data",
       ),
-      height=480,
-      margin=dict(l=10, r=10, b=10, t=30),
+      height=440,  # גובה קומפקטי שנכנס בדיוק במסך המסך
+      margin=dict(l=5, r=5, b=5, t=25),
   )
 
   st.plotly_chart(fig, use_container_width=True)

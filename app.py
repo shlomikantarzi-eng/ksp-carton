@@ -15,27 +15,20 @@ st.set_page_config(
 st.markdown(
     """
     <style>
-    /* יישור ימני ועיצוב כללי */
     html, body, [class*="css"] {
         direction: rtl;
         text-align: right;
         font-family: 'Segoe UI', Arial, sans-serif;
     }
-    
-    /* מרווח עליון מותאם כך שהכותרת תהיה בפריים מלא */
     .block-container {
         padding-top: 1.8rem !important;
         padding-bottom: 0.5rem !important;
         max-width: 98% !important;
     }
-    
-    /* סרגל צד רחב */
     [data-testid="stSidebar"] {
         min-width: 380px !important;
         max-width: 400px !important;
     }
-
-    /* קופסת פרטי המוצר שנבחר */
     .product-box {
         background-color: #f8fafc;
         border: 1px solid #cbd5e1;
@@ -54,8 +47,6 @@ st.markdown(
         color: #334155;
         margin-top: 2px;
     }
-
-    /* עיצוב כרטיסיות 4 הקרטונים */
     .carton-card {
         border: 1px solid #cbd5e1;
         border-radius: 8px;
@@ -120,7 +111,6 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# כותרת ראשית קומפקטית ובפריים
 st.markdown(
     "<h3 style='margin: 0 0 6px 0; color: #0f172a;'>📦 מערכת אופטימיזציית"
     " אריזה ותצוגת תלת-ממד (3D)</h3>",
@@ -128,7 +118,7 @@ st.markdown(
 )
 
 # ==========================================
-# 2. הגדרת 4 הקרטונים + איורי SVG מותאמים ויזואלית
+# 2. הגדרת 4 הקרטונים במחסן
 # ==========================================
 CARTONS = {
     "קבוצה 1": {
@@ -137,7 +127,6 @@ CARTONS = {
         "W": 481.0,
         "H": 295.0,
         "color": "#1f77b4",
-        # איור קופסה פרופורציונלית בינונית
         "svg": """<svg width="60" height="42" viewBox="0 0 70 45"><path d="M35 5 L60 16 L35 27 L10 16 Z" fill="#f59e0b" stroke="#b45309"/><path d="M10 16 L35 27 L35 42 L10 31 Z" fill="#d97706" stroke="#b45309"/><path d="M35 27 L60 16 L60 31 L35 42 Z" fill="#b45309" stroke="#78350f"/></svg>""",
     },
     "קבוצה 2": {
@@ -146,7 +135,6 @@ CARTONS = {
         "W": 880.0,
         "H": 390.0,
         "color": "#ff7f0e",
-        # איור קופסה רחבה ושטוחה
         "svg": """<svg width="75" height="35" viewBox="0 0 85 40"><path d="M42.5 5 L80 14 L42.5 23 L5 14 Z" fill="#f59e0b" stroke="#b45309"/><path d="M5 14 L42.5 23 L42.5 35 L5 26 Z" fill="#d97706" stroke="#b45309"/><path d="M42.5 23 L80 14 L80 26 L42.5 35 Z" fill="#b45309" stroke="#78350f"/></svg>""",
     },
     "קבוצה 3": {
@@ -155,7 +143,6 @@ CARTONS = {
         "W": 830.0,
         "H": 670.0,
         "color": "#9467bd",
-        # איור קופסה קוביותית וגבוהה
         "svg": """<svg width="50" height="48" viewBox="0 0 60 55"><path d="M30 4 L52 14 L30 24 L8 14 Z" fill="#f59e0b" stroke="#b45309"/><path d="M8 14 L30 24 L30 50 L8 40 Z" fill="#d97706" stroke="#b45309"/><path d="M30 24 L52 14 L52 40 L30 50 Z" fill="#b45309" stroke="#78350f"/></svg>""",
     },
     "קבוצה 4": {
@@ -164,92 +151,57 @@ CARTONS = {
         "W": 460.0,
         "H": 290.0,
         "color": "#17becf",
-        # איור קופסה צרה, ארוכה ונמוכה (כמו שרוול)
         "svg": """<svg width="80" height="30" viewBox="0 0 90 32"><path d="M45 4 L85 10 L45 16 L5 10 Z" fill="#f59e0b" stroke="#b45309"/><path d="M5 10 L45 16 L45 28 L5 22 Z" fill="#d97706" stroke="#b45309"/><path d="M45 16 L85 10 L85 22 L45 28 Z" fill="#b45309" stroke="#78350f"/></svg>""",
     },
 }
 
 
 # ==========================================
-# 3. טעינת הנתונים
+# 3. טעינה ישירה ומדוייקת מ-products.csv
 # ==========================================
-@st.cache_data(ttl=600)
+@st.cache_data(ttl=1)  # רענון מיידי של הזיכרון
 def load_all_products():
-  try:
-    df = pd.read_csv("products.csv")
-    cols = {str(c).strip(): str(c).strip() for c in df.columns}
-    df.rename(columns=cols, inplace=True)
+  import os
 
-    sku_col = next(
-        (
-            c
-            for c in df.columns
-            if "sku" in c.lower() or "מק" in c or "id" in c.lower()
-        ),
-        df.columns[0],
-    )
-    name_col = next(
-        (
-            c
-            for c in df.columns
-            if "name" in c.lower()
-            or "item" in c.lower()
-            or "שם" in c
-            or "desc" in c.lower()
-        ),
-        df.columns[1],
-    )
-    l_col = next(
-        (
-            c
-            for c in df.columns
-            if "box_l" in c.lower()
-            or "length" in c.lower()
-            or c.lower() == "l"
-            or "אורך" in c
-        ),
-        None,
-    )
-    w_col = next(
-        (
-            c
-            for c in df.columns
-            if "box_w" in c.lower()
-            or "width" in c.lower()
-            or c.lower() == "w"
-            or "רוחב" in c
-        ),
-        None,
-    )
-    h_col = next(
-        (
-            c
-            for c in df.columns
-            if "box_h" in c.lower()
-            or "height" in c.lower()
-            or c.lower() == "h"
-            or "גובה" in c
-        ),
-        None,
-    )
+  if os.path.exists("products.csv"):
+    try:
+      # ניסיון קריאה בפורמטים שונים
+      try:
+        df = pd.read_csv("products.csv", encoding="utf-8")
+      except Exception:
+        df = pd.read_csv("products.csv", encoding="utf-8-sig")
 
-    if l_col and w_col and h_col:
-      df_clean = df[[sku_col, name_col, l_col, w_col, h_col]].copy()
-      df_clean.columns = ["SKU", "Item_Name", "Box_L", "Box_W", "Box_H"]
+      df.columns = [str(c).strip() for c in df.columns]
 
-      df_clean["SKU"] = (
-          df_clean["SKU"]
-          .astype(str)
-          .apply(lambda x: x.replace(".0", "") if x.endswith(".0") else x)
-      )
-      df_clean["Box_L"] = pd.to_numeric(df_clean["Box_L"], errors="coerce")
-      df_clean["Box_W"] = pd.to_numeric(df_clean["Box_W"], errors="coerce")
-      df_clean["Box_H"] = pd.to_numeric(df_clean["Box_H"], errors="coerce")
-      df_clean.dropna(subset=["Box_L", "Box_W", "Box_H"], inplace=True)
-      return df_clean, "CSV"
-  except Exception:
-    pass
+      # זיהוי העמודות הספציפיות מקובץ products.csv שלך
+      sku_c = next((c for c in df.columns if "sku" in c.lower()), None)
+      name_c = next((c for c in df.columns if "name" in c.lower()), None)
+      length_c = next((c for c in df.columns if "length" in c.lower()), None)
+      width_c = next((c for c in df.columns if "width" in c.lower()), None)
+      height_c = next((c for c in df.columns if "height" in c.lower()), None)
 
+      if sku_c and name_c and length_c and width_c and height_c:
+        df_clean = pd.DataFrame({
+            "SKU": (
+                df[sku_c]
+                .astype(str)
+                .apply(lambda x: x.replace(".0", "") if x.endswith(".0") else x)
+            ),
+            "Item_Name": df[name_c].astype(str),
+            "Box_L": pd.to_numeric(df[length_c], errors="coerce"),
+            "Box_W": pd.to_numeric(df[width_c], errors="coerce"),
+            "Box_H": pd.to_numeric(df[height_c], errors="coerce"),
+        })
+
+        # ניקוי שורות ללא מידות תקינות
+        df_clean.dropna(subset=["Box_L", "Box_W", "Box_H"], inplace=True)
+        return df_clean, "CSV"
+      else:
+        st.sidebar.error(f"חסרות עמודות ב-CSV. נמצאו: {list(df.columns)}")
+    except Exception as e:
+      st.sidebar.error(f"שגיאה בטעינת products.csv: {e}")
+
+  # גיבוי רק אם הקובץ לא נמצע
   mock_df = pd.DataFrame([
       {
           "SKU": "100019",
@@ -274,7 +226,7 @@ df_items, data_source = load_all_products()
 if data_source == "CSV":
   st.sidebar.success(f'🟢 נטענו {len(df_items)} מק"טים מקובץ ה-CSV!')
 else:
-  st.sidebar.info('💡 העלה קובץ products.csv לטעינת כל המאגר.')
+  st.sidebar.warning('💡 עדיין טוען נתוני מדגם. בודק את קובץ products.csv...')
 
 # ==========================================
 # 4. סיידבאר: לבחירת מוצר
@@ -348,7 +300,7 @@ st.markdown(
 )
 
 # ==========================================
-# 7. מפרט 4 הקרטונים במחסן (נקי ללא תגיות זולגות)
+# 7. מפרט 4 הקרטונים במחסן
 # ==========================================
 st.markdown(
     "<div style='font-weight: 700; font-size: 0.98rem; margin: 2px 0 4px 0;'>📋"
@@ -388,7 +340,7 @@ for idx, (key, dims) in enumerate(CARTONS.items()):
   cols[idx].markdown(card_html, unsafe_allow_html=True)
 
 # ==========================================
-# 8. הדמיית תלת-ממד (3D) גבוהה ונגישה במרכז המסך
+# 8. הדמיית תלת-ממד (3D)
 # ==========================================
 if not valid_options:
   st.error(
@@ -487,7 +439,6 @@ else:
 
   fig = go.Figure()
 
-  # קרטון חיצוני
   fig.add_trace(
       get_box_mesh(
           0,
@@ -514,7 +465,6 @@ else:
       )
   )
 
-  # מוצר פנימי
   fig.add_trace(
       get_box_mesh(
           0, 0, 0, item_L, item_W, item_H, "המוצר", "green", opacity=0.75
@@ -535,7 +485,7 @@ else:
           zaxis_title='גובה (מ"מ)',
           aspectmode="data",
       ),
-      height=440,  # גובה קומפקטי שנכנס בדיוק במסך המסך
+      height=440,
       margin=dict(l=5, r=5, b=5, t=25),
   )
 

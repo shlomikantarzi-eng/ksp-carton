@@ -3,60 +3,131 @@ import plotly.graph_objects as go
 import streamlit as st
 
 # ==========================================
-# 1. הגדרות עמוד ועיצוב CSS מותאם
+# 1. הגדרות עמוד ועיצוב CSS מתקדם (UI/UX & RTL)
 # ==========================================
 st.set_page_config(
-    page_title="מערכת אופטימיזציית אריזה 3D - KSP", page_icon="📦", layout="wide"
+    page_title="מערכת אופטימיזציית אריזה 3D - KSP",
+    page_icon="📦",
+    layout="wide",
+    initial_sidebar_state="expanded",
 )
 
-# הרחבת סרגל הכלים הצידי (Sidebar) ועיצוב כרטיסיות
 st.markdown(
     """
     <style>
-    /* הרחבת סרגל הכלים מצד שמאל */
-    [data-testid="stSidebar"] {
-        min-width: 420px !important;
-        max-width: 420px !important;
+    /* יישור ימני ועיצוב כללי */
+    html, body, [class*="css"] {
+        direction: rtl;
+        text-align: right;
+        font-family: 'Segoe UI', Arial, sans-serif;
     }
     
-    /* עיצוב כרטיסיות קרטונים */
-    .carton-card {
-        border: 2px solid #e0e0e0;
-        border-radius: 10px;
-        padding: 12px;
-        background-color: #f9f9f9;
-        text-align: center;
+    /* צמצום מרווחים עליונים כדי שהכל ייכנס במסך */
+    .block-container {
+        padding-top: 1rem !important;
+        padding-bottom: 0.5rem !important;
+        max-width: 98% !important;
+    }
+    
+    /* הרחבת סרגל הצד */
+    [data-testid="stSidebar"] {
+        min-width: 380px !important;
+        max-width: 400px !important;
+    }
+
+    /* קופסת פרטי המוצר שנבחר */
+    .product-box {
+        background-color: #f8fafc;
+        border: 1px solid #cbd5e1;
+        border-right: 6px solid #2563eb;
+        border-radius: 8px;
+        padding: 10px 16px;
         margin-bottom: 10px;
     }
-    .carton-card-active {
-        border: 3px solid #2e7d32 !important;
-        background-color: #e8f5e9 !important;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    .product-title {
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: #0f172a;
+        margin-bottom: 4px;
+    }
+    .product-info-line {
+        font-size: 0.95rem;
+        color: #334155;
+        margin-top: 2px;
+    }
+
+    /* עיצוב כרטיסיות 4 הקרטונים */
+    .carton-card {
+        border: 1px solid #cbd5e1;
+        border-radius: 10px;
+        padding: 10px;
+        background-color: #ffffff;
+        text-align: center;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .carton-card-selected {
+        border: 2.5px solid #16a34a !important;
+        background-color: #f0fdf4 !important;
+        box-shadow: 0 4px 10px rgba(22, 163, 74, 0.15);
     }
     .badge-selected {
-        background-color: #2e7d32;
-        color: white;
-        padding: 3px 8px;
-        border-radius: 5px;
-        font-size: 0.85em;
-        font-weight: bold;
+        background-color: #16a34a;
+        color: #ffffff;
+        font-size: 0.78rem;
+        font-weight: 600;
+        padding: 2px 8px;
+        border-radius: 4px;
+        display: inline-block;
     }
-    .badge-neutral {
-        background-color: #757575;
-        color: white;
-        padding: 3px 8px;
-        border-radius: 5px;
-        font-size: 0.85em;
+    .badge-normal {
+        background-color: #64748b;
+        color: #ffffff;
+        font-size: 0.78rem;
+        padding: 2px 8px;
+        border-radius: 4px;
+        display: inline-block;
+    }
+    .carton-title {
+        font-size: 0.98rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin: 6px 0 4px 0;
+    }
+    .carton-img-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 4px 0;
+    }
+    .dims-breakdown {
+        font-size: 0.85rem;
+        color: #334155;
+        background-color: #f8fafc;
+        border-radius: 6px;
+        padding: 6px;
+        margin-top: 6px;
+        border: 1px solid #e2e8f0;
+        line-height: 1.4;
+    }
+    .carton-util {
+        font-size: 0.88rem;
+        font-weight: 700;
+        color: #15803d;
+        margin-top: 6px;
     }
     </style>
     """,
     unsafe_allow_html=True,
 )
 
-st.title("📦 מערכת אופטימיזציית אריזה ותצוגת 3D")
+st.markdown(
+    "<h3 style='margin-bottom: 6px;'>📦 מערכת אופטימיזציית אריזה ותצוגת"
+    " תלת-ממד (3D)</h3>",
+    unsafe_allow_html=True,
+)
 
 # ==========================================
-# 2. הגדרת 4 הקרטונים הסופיים במחסן
+# 2. הגדרת 4 הקרטונים במחסן
 # ==========================================
 CARTONS = {
     "קבוצה 1": {
@@ -91,7 +162,7 @@ CARTONS = {
 
 
 # ==========================================
-# 3. מנגנון טעינת נתונים
+# 3. טעינת הנתונים
 # ==========================================
 @st.cache_data(ttl=600)
 def load_all_products():
@@ -156,7 +227,12 @@ def load_all_products():
     if l_col and w_col and h_col:
       df_clean = df[[sku_col, name_col, l_col, w_col, h_col]].copy()
       df_clean.columns = ["SKU", "Item_Name", "Box_L", "Box_W", "Box_H"]
-      df_clean["SKU"] = df_clean["SKU"].astype(str)
+
+      df_clean["SKU"] = (
+          df_clean["SKU"]
+          .astype(str)
+          .apply(lambda x: x.replace(".0", "") if x.endswith(".0") else x)
+      )
       df_clean["Box_L"] = pd.to_numeric(df_clean["Box_L"], errors="coerce")
       df_clean["Box_W"] = pd.to_numeric(df_clean["Box_W"], errors="coerce")
       df_clean["Box_H"] = pd.to_numeric(df_clean["Box_H"], errors="coerce")
@@ -168,10 +244,10 @@ def load_all_products():
   mock_df = pd.DataFrame([
       {
           "SKU": "100019",
-          "Item_Name": "Hamilton 20 Inch Standing Fan Heavy Duty",
-          "Box_L": 620.0,
-          "Box_W": 400.0,
-          "Box_H": 180.0,
+          "Item_Name": "Hemilton 20 Inch Standing Fan 3 Speeds HEM-632",
+          "Box_L": 690.0,
+          "Box_W": 560.0,
+          "Box_H": 140.0,
       },
       {
           "SKU": "200045",
@@ -187,14 +263,12 @@ def load_all_products():
 df_items, data_source = load_all_products()
 
 if data_source == "CSV":
-  st.sidebar.success(f'🟢 נטענו {len(df_items)} מק"טים מקובץ ה-CSV במאגר!')
+  st.sidebar.success(f'🟢 נטענו {len(df_items)} מק"טים מקובץ ה-CSV!')
 else:
-  st.sidebar.info(
-      '💡 טוען נתוני מדגם. העלה קובץ products.csv למאגר לטעינת כל המק"טים.'
-  )
+  st.sidebar.info('💡 העלה קובץ products.csv לטעינת כל המאגר.')
 
 # ==========================================
-# 4. סיידבאר: לבחירה מתוך המאגר
+# 4. סיידבאר: לבחירת מוצר
 # ==========================================
 st.sidebar.header("🔎 איתור מוצר מהמלאי")
 search_mode = st.sidebar.radio(
@@ -253,61 +327,73 @@ best_carton_key = (
 )
 
 # ==========================================
-# 6. תצוגת פרטי המוצר שנבחר (שם מלא בולט)
+# 6. תצוגת פרטי המוצר
 # ==========================================
 st.markdown(
     f"""
-    <div style="background-color: #f0f4f8; padding: 15px; border-radius: 10px; border-right: 6px solid #1f77b4; margin-bottom: 20px;">
-        <h3 style="margin: 0; color: #1c3d5a;">🛒 מוצר שנבחר: <b>{item_name_full}</b></h3>
-        <p style="margin: 5px 0 0 0; color: #555; font-size: 1.1em;">
-            <b>מק"ט:</b> {sku_val} &nbsp;|&nbsp; 
-            <b>מידות מוצר:</b> {int(item_L)} x {int(item_W)} x {int(item_H)} מ"מ
-        </p>
+    <div class="product-box">
+        <div class="product-title">🛒 מוצר שנבחר: {item_name_full}</div>
+        <div class="product-info-line"><b>מק"ט:</b> {sku_val}</div>
+        <div class="product-info-line"><b>מידות המוצר:</b> אורך <b>{int(item_L)}</b> מ"מ | רוחב <b>{int(item_W)}</b> מ"מ | גובה <b>{int(item_H)}</b> מ"מ</div>
     </div>
     """,
     unsafe_allow_html=True,
 )
 
 # ==========================================
-# 7. תצוגת 4 הקרטונים במחסן והדגשת הנבחר
+# 7. מפרט 4 הקרטונים במחסן (עם איור SVG ומידות מפורטות)
 # ==========================================
-st.subheader("📋 מפרט 4 הקרטונים במחסן והתאמה:")
-col_c1, col_c2, col_c3, col_c4 = st.columns(4)
+st.markdown(
+    "<h4 style='margin-top: 2px; margin-bottom: 6px;'>📋 מפרט הקרטונים במחסן"
+    " והתאמה:</h4>",
+    unsafe_allow_html=True,
+)
 
-cols = [col_c1, col_c2, col_c3, col_c4]
+cols = st.columns(4)
+
+# איור קרטון וקטורי (SVG)
+BOX_SVG = """
+<svg width="42" height="42" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M32 6L6 18V46L32 58L58 46V18L32 6Z" fill="#D97706" stroke="#78350F" stroke-width="1.5"/>
+    <path d="M32 6L58 18L32 30L6 18L32 6Z" fill="#F59E0B"/>
+    <path d="M32 30V58L6 46V18L32 30Z" fill="#D97706"/>
+    <path d="M32 30L58 18V46L32 58V30Z" fill="#B45309"/>
+    <path d="M19 12L45 24" stroke="#FEF3C7" stroke-width="1.5" stroke-dasharray="2 2"/>
+</svg>
+"""
 
 for idx, (key, dims) in enumerate(CARTONS.items()):
   is_selected = key == best_carton_key
 
-  # חישוב אחוז ניצול לכרטיסייה במידה וזה הקרטון הנבחר
-  util_text = ""
-  if is_selected and valid_options:
-    best_opt = next(o for o in valid_options if o["key"] == key)
-    util_text = f"<br><b>ניצול נפח:</b> {best_opt['utilization']:.1f}%"
-
-  card_class = "carton-card carton-card-active" if is_selected else "carton-card"
-  badge_html = (
+  card_class = "carton-card carton-card-selected" if is_selected else "carton-card"
+  badge = (
       '<span class="badge-selected">🎯 נבחר עבור המוצר</span>'
       if is_selected
-      else '<span class="badge-neutral">זמין במחסן</span>'
+      else '<span class="badge-normal">זמין במחסן</span>'
   )
 
-  with cols[idx]:
-    st.markdown(
-        f"""
-        <div class="{card_class}">
-            {badge_html}
-            <h4 style="margin: 8px 0 4px 0;">{dims['title']}</h4>
-            <p style="margin: 0; color: #444; font-size: 0.95em;">
-                <b>{int(dims['L'])} x {int(dims['W'])} x {int(dims['H'])}</b> מ"מ
-                {util_text}
-            </p>
-        </div>
-        """,
-        unsafe_allow_html=True,
+  util_html = ""
+  if is_selected and valid_options:
+    best_opt = next(o for o in valid_options if o["key"] == key)
+    util_html = (
+        f'<div class="carton-util">ניצול נפח:'
+        f' {best_opt["utilization"]:.1f}%</div>'
     )
 
-st.divider()
+  card_html = f"""
+    <div class="{card_class}">
+        {badge}
+        <div class="carton-img-container">{BOX_SVG}</div>
+        <div class="carton-title">{dims['title']}</div>
+        <div class="dims-breakdown">
+            <b>אורך:</b> {int(dims['L'])} מ"מ<br>
+            <b>רוחב:</b> {int(dims['W'])} מ"מ<br>
+            <b>גובה:</b> {int(dims['H'])} מ"מ
+        </div>
+        {util_html}
+    </div>
+    """
+  cols[idx].markdown(card_html, unsafe_allow_html=True)
 
 # ==========================================
 # 8. הדמיית תלת-ממד (3D)
@@ -409,7 +495,7 @@ else:
 
   fig = go.Figure()
 
-  # קרטון חיצוני נבחר
+  # קרטון חיצוני
   fig.add_trace(
       get_box_mesh(
           0,
@@ -457,8 +543,8 @@ else:
           zaxis_title='גובה (מ"מ)',
           aspectmode="data",
       ),
-      height=550,
-      margin=dict(l=10, r=10, b=10, t=40),
+      height=480,
+      margin=dict(l=10, r=10, b=10, t=30),
   )
 
   st.plotly_chart(fig, use_container_width=True)

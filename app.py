@@ -4,7 +4,7 @@ import plotly.graph_objects as go
 import streamlit as st
 
 # ==========================================
-# 1. הגדרות עמוד ו-CSS רספונסיבי למובייל (@media queries)
+# 1. הגדרות עמוד ו-CSS רספונסיבי
 # ==========================================
 st.set_page_config(
     page_title="מערכת אופטימיזציית אריזה 3D - KSP",
@@ -23,13 +23,23 @@ st.markdown(
         font-family: 'Segoe UI', Arial, sans-serif;
     }
     
-    /* מרווחי עמוד ראשי */
+    /* מרווחי עמוד ראשי - הוספת רווח עליון לקבלת הפריים */
     .block-container {
-        padding-top: 0.8rem !important;
+        padding-top: 1.5rem !important;
         padding-bottom: 0.5rem !important;
         padding-left: 0.8rem !important;
         padding-right: 0.8rem !important;
         max-width: 98% !important;
+    }
+
+    /* כותרת ראשית ממורכזת ומשוחררת בחלק העליון */
+    .main-header {
+        text-align: center !important;
+        margin-top: 8px !important;
+        margin-bottom: 12px !important;
+        color: #0f172a;
+        font-size: 1.4rem;
+        font-weight: 700;
     }
 
     /* קופסת פרטי המוצר שנבחר */
@@ -114,18 +124,17 @@ st.markdown(
         margin-top: 3px;
     }
 
-    /* ==========================================
-       📱 חוקי CSS מיוחדים למובייל (מסכים מתחת ל-768px)
-       ========================================== */
+    /* חוקי CSS מיוחדים למובייל */
     @media (max-width: 768px) {
         .block-container {
-            padding-top: 0.4rem !important;
+            padding-top: 1.2rem !important;
             padding-left: 0.4rem !important;
             padding-right: 0.4rem !important;
         }
         .main-header {
-            font-size: 1.1rem !important;
-            margin-bottom: 4px !important;
+            font-size: 1.15rem !important;
+            margin-top: 6px !important;
+            margin-bottom: 8px !important;
         }
         .product-title {
             font-size: 0.92rem !important;
@@ -149,9 +158,9 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
+# כותרת ראשית ממורכזת ובמיקום מדויק
 st.markdown(
-    "<h3 class='main-header' style='margin: 0 0 6px 0; color: #0f172a;'>📦"
-    " מערכת אופטימיזציית אריזה 3D</h3>",
+    "<div class='main-header'>📦 מערכת אופטימיזציית אריזה 3D</div>",
     unsafe_allow_html=True,
 )
 
@@ -374,7 +383,7 @@ for idx, (key, dims) in enumerate(CARTONS.items()):
   cols[idx].markdown(card_html, unsafe_allow_html=True)
 
 # ==========================================
-# 8. הדמיית תלת-ממד (3D) מותאמת למובייל
+# 8. הדמיית תלת-ממד (3D)
 # ==========================================
 if not valid_options:
   st.error(
@@ -520,11 +529,10 @@ else:
           zaxis_title='גובה (מ"מ)',
           aspectmode="data",
       ),
-      height=380,  # גובה מותאמת לסמארטפונים
-      margin=dict(l=0, r=0, b=0, t=20),  # ניצול מקסימלי של רוחב המסך
+      height=380,
+      margin=dict(l=0, r=0, b=0, t=20),
   )
 
-  # הפעלת תמיכה רספונסיבית במובייל וביטול סרגלי כלים מעיקים
   st.plotly_chart(
       fig,
       use_container_width=True,

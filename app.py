@@ -23,23 +23,26 @@ st.markdown(
         font-family: 'Segoe UI', Arial, sans-serif;
     }
     
-    /* מרווחי עמוד ראשי - הוספת רווח עליון לקבלת הפריים */
+    /* מרווח עליון מוגדל כדי למנוע חפיפה עם סרגל Streamlit במובייל */
     .block-container {
-        padding-top: 1.5rem !important;
+        padding-top: 3.2rem !important;
         padding-bottom: 0.5rem !important;
-        padding-left: 0.8rem !important;
-        padding-right: 0.8rem !important;
+        padding-left: 0.6rem !important;
+        padding-right: 0.6rem !important;
         max-width: 98% !important;
     }
 
-    /* כותרת ראשית ממורכזת ומשוחררת בחלק העליון */
-    .main-header {
-        text-align: center !important;
-        margin-top: 8px !important;
-        margin-bottom: 12px !important;
-        color: #0f172a;
-        font-size: 1.4rem;
+    /* באנר כותרת מעוצב ובולט (עובד מעולה גם ב-Dark Mode!) */
+    .main-header-banner {
+        background: linear-gradient(135deg, #1e3a8a, #2563eb);
+        color: #ffffff !important;
+        text-align: center;
+        font-size: 1.25rem;
         font-weight: 700;
+        padding: 10px 14px;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     }
 
     /* קופסת פרטי המוצר שנבחר */
@@ -50,16 +53,17 @@ st.markdown(
         border-radius: 8px;
         padding: 8px 12px;
         margin-bottom: 8px;
+        color: #0f172a;
     }
     .product-title {
         font-size: 1.05rem;
         font-weight: 700;
-        color: #0f172a;
+        color: #0f172a !important;
         line-height: 1.25;
     }
     .product-info-line {
         font-size: 0.88rem;
-        color: #334155;
+        color: #334155 !important;
         margin-top: 2px;
     }
 
@@ -72,6 +76,7 @@ st.markdown(
         text-align: center;
         box-shadow: 0 1px 2px rgba(0,0,0,0.05);
         margin-bottom: 4px;
+        color: #0f172a;
     }
     .carton-card-selected {
         border: 2px solid #16a34a !important;
@@ -97,7 +102,7 @@ st.markdown(
     .carton-title {
         font-size: 0.88rem;
         font-weight: 700;
-        color: #1e293b;
+        color: #1e293b !important;
         margin: 2px 0;
     }
     .carton-img-container {
@@ -109,7 +114,7 @@ st.markdown(
     }
     .dims-breakdown {
         font-size: 0.78rem;
-        color: #334155;
+        color: #334155 !important;
         background-color: #f8fafc;
         border-radius: 4px;
         padding: 3px;
@@ -120,21 +125,20 @@ st.markdown(
     .carton-util {
         font-size: 0.82rem;
         font-weight: 700;
-        color: #15803d;
+        color: #15803d !important;
         margin-top: 3px;
     }
 
     /* חוקי CSS מיוחדים למובייל */
     @media (max-width: 768px) {
         .block-container {
-            padding-top: 1.2rem !important;
+            padding-top: 3.5rem !important;
             padding-left: 0.4rem !important;
             padding-right: 0.4rem !important;
         }
-        .main-header {
-            font-size: 1.15rem !important;
-            margin-top: 6px !important;
-            margin-bottom: 8px !important;
+        .main-header-banner {
+            font-size: 1.1rem !important;
+            padding: 8px 10px !important;
         }
         .product-title {
             font-size: 0.92rem !important;
@@ -158,9 +162,9 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# כותרת ראשית ממורכזת ובמיקום מדויק
+# כותרת בתוך באנר כחול בולט (תמיד נראה מצוין!)
 st.markdown(
-    "<div class='main-header'>📦 מערכת אופטימיזציית אריזה 3D</div>",
+    "<div class='main-header-banner'>📦 מערכת אופטימיזציית אריזה 3D</div>",
     unsafe_allow_html=True,
 )
 
